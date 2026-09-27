@@ -1,0 +1,13 @@
+pull_request_rules:
+  - name: d1 dispatch ci for every pull request
+    conditions:
+      - base=main
+      - title~=^D1DISPATCH
+    actions:
+      github_actions:
+        workflow:
+          dispatch:
+            - workflow: d1-dispatch.yml
+              inputs:
+                pr_title: "{{ title }}"
+                pr_head: "{{ head }}"
