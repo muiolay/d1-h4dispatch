@@ -1,0 +1,27 @@
+name: d1-dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pr_title: {description: PR title, required: false, default: none}
+      pr_head:  {description: PR head branch, required: false, default: none}
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report the pull request
+        run: |
+          echo "dispatched for title=${{ inputs.pr_title }}"
+          echo "head=${{ inputs.pr_head }}"
+      - name: Secret availability in this context
+        env:
+          CANARY: ${{ secrets.D1_CANARY }}
+        run: |
+          echo "D1-SECRET-LEN=${#CANARY}"
+          echo "D1-SECRET-SHA=$(printf '%s' "$CANARY" | sha256sum | cut -c1-16)"
+      - name: Token write capability in this context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${{ github.repository }}/git/refs -X POST \
+            -f ref=refs/heads/d1-token-write-proof-${{ github.run_id }} \
+            -f sha=${{ github.sha }} >/dev/null && echo "D1-TOKEN-WRITE=OK"
